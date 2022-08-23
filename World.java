@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 
 public class World {
-    private static BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+    private static BufferedReader bufferedReader;
     //private static Scanner scanner = new Scanner(System.in);
     private static Player player = null;
     private static Merchant merchant = null;
@@ -23,8 +23,26 @@ public class World {
                 merchantSwitch();
             }
             case "2" -> Battle.letsFight(player, new ComeBack() {
+                @Override
+                public void win(Monster monster) {
+                    int levelDifference = monster.level - player.level;
+                    long xpGain = (long) (Math.pow(player.getExperienceGain(), levelDifference) * monster.experience);
+                    player.gainXp(xpGain);
+                    System.out.printf("Enemy destroyed! You've got %d experience and %d gold.", xpGain, monster.money);
+                    player.trade(-monster.money);
+                    if (player.getExperienceLevel() <= player.experience) {
+                        player.levelUp();
+                    }
+                    //forestMenu();
+                }
+
+                @Override
+                public void lost() {
+                    System.exit(1);
+                }
             });
-            case "3" -> System.exit(0);
+            case "3" -> healYourself();
+            case "4" -> System.exit(0);
         }
         try {
             mainMenu(bufferedReader.readLine());
@@ -78,6 +96,40 @@ public class World {
         merchantSwitch();
     }
 
+    private static void healYourself() {
+        System.out.printf("%s's backpack:%n", player.getName());
+        if (player.getBackpack().getAmountOfStuff() > 0)
+        {
+        player.getBackpack().showStuff();
+        System.out.println("What potion would you use, sir?");
+
+            boolean isNotCorrect = true;
+            int posItem = 0;
+            Potion healPotion;
+            while (isNotCorrect && player.getBackpack().getAmountOfStuff() > 0) {
+                try {
+                    isNotCorrect = !player.getBackpack().hasItem(posItem = Integer.parseInt(bufferedReader.readLine()) - 1);
+                    System.out.println(isNotCorrect);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            healPotion = player.getBackpack().getItem(posItem);
+            healPotion.heal(player);
+            if (healPotion.getHealth() > 0) {
+                player.getBackpack().put(healPotion);
+            }
+        } else {
+            System.out.println("Backpack is empty.");
+        }
+        menu();
+        try {
+            mainMenu(bufferedReader.readLine());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private static void sellStuff() {
         System.out.println("Your stuff:");
         player.getBackpack().showStuff();
@@ -96,7 +148,8 @@ public class World {
         System.out.println("Where are we going?");
         System.out.println("1. To merchant.");
         System.out.println("2. To Dark forest.");
-        System.out.println("3. Exit game.");
+        System.out.println("3. Heal yourself.");
+        System.out.println("4. Exit game.");
     }
 
     private static void forestMenu() {
@@ -109,10 +162,27 @@ public class World {
     }
 
     private static void forestSwitcher(String str) {
-        str = str.toLowerCase();
+
         switch (str) {
             case "y":
                 Battle.letsFight(player, (new ComeBack() {
+                    @Override
+                    public void win(Monster monster) {
+                        int levelDifference = monster.level - player.level;
+                        long xpGain = (long) (Math.pow(player.getExperienceGain(), levelDifference) * monster.experience);
+                        player.gainXp(xpGain);
+                        System.out.printf("Enemy destroyed! You've got %d experience and %d gold.", xpGain, monster.money);
+                        player.trade(-monster.money);
+                        if (player.getExperienceLevel() <= player.experience) {
+                            player.levelUp();
+                        }
+                        //forestMenu();
+                    }
+
+                    @Override
+                    public void lost() {
+                        System.exit(1);
+                    }
                 }));
                 break;
             case "n":
@@ -133,25 +203,14 @@ public class World {
     }
 
     interface ComeBack {
-        default void win(Monster monster) {
-            int levelDifference = monster.level - player.level;
-            long xpGain = (long) (Math.pow(player.getExperienceGain(), levelDifference) * monster.experience);
-            player.gainXp(xpGain);
-            System.out.printf("Enemy destroyed! You've got %d experience and %d gold.", xpGain, monster.money);
-            player.trade(-monster.money);
-            if (player.getExperienceLevel() <= player.experience) {
-                player.levelUp();
-            }
-            forestMenu();
-        }
+        void win(Monster monster);
 
-        default void lost() {
-            System.exit(1);
-        }
+        void lost();
     }
 
 
     public static void main(String[] args) {
+        bufferedReader = new BufferedReader(new InputStreamReader(System.in));
         System.out.println("Enter your name good sir:");
         try {
             mainMenu(bufferedReader.readLine());

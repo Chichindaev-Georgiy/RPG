@@ -37,7 +37,7 @@ public class Player extends Fighter {
         int randInt = rand.nextInt(0, 101);
         if (dexterity * 3 > randInt) {
             aMonster.health -= damage;
-            System.out.printf("%s damaged enemy by %d HP! %n%s now have %d health...%n", name,
+            System.out.printf("%s damaged monster by %d HP! %n%s now have %d health...%n", name,
                     damage, aMonster.name, aMonster.health);
 
         }
@@ -46,7 +46,7 @@ public class Player extends Fighter {
             int levelDifference = aMonster.level - level;
             long xpGain = (long) (Math.pow(experienceGain, levelDifference) * aMonster.experience);
             experience += xpGain;
-            System.out.printf("Enemy destroyed! You've got %d experience and %d gold.", xpGain, aMonster.money);
+            System.out.printf("Enemy destroyed! You've got %d experience and %d gold.%n", xpGain, aMonster.money);
             money += aMonster.money;
         }
         if (experience >= experienceLevel) {
@@ -74,15 +74,15 @@ public class Player extends Fighter {
             long previousBaseLevel = (long) (experienceBase * Math.pow(2, experienceIncrement * (level - 2)));
             xp = (int) (xpBarSize * (experienceLevel - experience) / (experienceLevel - previousBaseLevel));
         }
-        System.out.printf("%s XP progress: %d%n [", name, level);
+        System.out.printf("%s's XP progress: %d%n [", name, level);
         int i = 0;
         for (; i < xp; i++) {
-            System.out.print("-");
+            System.out.print("X");
         }
         for (; i < xpBarSize; i++) {
-            System.out.print(" ");
+            System.out.print("_");
         }
-        System.out.printf("]%nThere are %d XP remaining until level up.%nHealth: %d из %d",
+        System.out.printf("]%nThere are %d XP remaining until level up.%nHealth: %d out of %d.%n",
                 experienceLevel - experience, health, maxHealth);
     }
 
